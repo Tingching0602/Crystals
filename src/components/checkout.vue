@@ -3,7 +3,7 @@
     <!-- 標題區 -->
     <div class="header">
       <div class="logo">
-        <img :src="HOHO" width="160" height="60" />
+        <span class="logo-text">微光水晶</span>
       </div>
       <ul class="nav-menu">
         <li><router-link to="/">回到首頁</router-link></li>
@@ -101,6 +101,34 @@
                   </div>
                 </el-form-item>
                 
+                <!-- LINE 官方帳號綁定 -->
+                <el-alert
+                  type="success"
+                  :closable="false"
+                  style="margin-bottom: 20px;"
+                >
+                  <template #title>
+                    <div style="line-height: 1.6;">
+                      <div style="font-size: 16px; font-weight: bold; margin-bottom: 8px;">
+                        💚 綁定微光水晶 LINE 官方帳號
+                      </div>
+                      <div style="font-size: 14px; color: #333; margin-bottom: 8px;">
+                        現在綁定，本次訂單 <span style="color: #f56c6c; font-weight: bold;">直接折 NT$150</span>，<br/>
+                        還能在 LINE 收到訂單與出貨通知。
+                      </div>
+                      <div style="margin-top: 10px;">
+                        👉 <a 
+                          href="https://lin.ee/1QdPsXd" 
+                          target="_blank"
+                          style="color: #267b98; font-weight: bold; text-decoration: underline; font-size: 15px;"
+                        >
+                          【我要綁定並折抵 150】
+                        </a>
+                      </div>
+                    </div>
+                  </template>
+                </el-alert>
+                
                 <el-form-item label="付款方式" prop="payment">
                   <el-radio-group v-model="checkoutForm.payment" @change="onPaymentChange">
                     <el-radio value="transfer">銀行轉帳</el-radio>
@@ -143,7 +171,6 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
-import HOHO from "../img/HOHO.png"
 
 const router = useRouter()
 
@@ -360,6 +387,13 @@ onMounted(() => {
   flex: 1;
   padding-top: 80px;
   padding-bottom: 20px;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #267b98;
+  letter-spacing: 2px;
 }
 
 .nav-menu {

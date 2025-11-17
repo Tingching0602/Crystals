@@ -96,6 +96,15 @@ body {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   z-index: 1000;
 }
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #267b98;
+  letter-spacing: 2px;
+  cursor: pointer;
+}
+
 .sumbitButtonLogin {
   background-color: #567892 !important;
   color: #fff !important;
@@ -108,8 +117,9 @@ body {
   font-weight: 900;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   z-index: 5;
+  margin-left: auto;
 }
 
 .nav-menu li a {
@@ -120,9 +130,6 @@ body {
 
 .memberdata {
   display: flex;
-}
-.loginMemeber {
-  margin-right: 200px;
 }
 
 .lovebox {
@@ -836,6 +843,8 @@ footer {
 /* 控制TABS顏色 */
 .el-tabs__item {
   color: #567892 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
 }
 
 .el-tabs__item:hover {
@@ -844,6 +853,7 @@ footer {
 
 .is-active {
   color: #af9857 !important;
+  font-size: 18px !important;
 }
 
 .is-active:hover {
@@ -1396,3 +1406,44 @@ input {
     font-size: 16px;
   }
 }
+
+/* 圖片載入優化 */
+img {
+  /* 防止圖片載入時的佈局位移 */
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* 為延遲載入的圖片添加淡入效果 */
+img[loading="lazy"] {
+  opacity: 0;
+  transition: opacity 0.3s ease-in;
+}
+
+img[loading="lazy"].loaded,
+img[loading="lazy"]:not([src=""]) {
+  opacity: 1;
+}
+
+/* 卡片圖片優化 */
+.card-img {
+  width: 100%;
+  height: 250px;
+  object-fit: cover;
+  background-color: #f5f5f5;
+}
+
+/* 會員頭像優化 */
+.profile-avatar img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  background-color: #f0f0f0;
+}
+
+/* 商品小圖優化 */
+.product-image {
+  background-color: #f5f5f5;
+}
+

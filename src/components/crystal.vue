@@ -4,27 +4,21 @@
     <!-- 固定頂部的標題區 -->
     <div class="header">
       <div class="logo">
-        <img :src="HOHO" width="160" hight="60" />
+        <span class="logo-text">微光水晶</span>
       </div>
 
       <!-- 桌面版選單 -->
       <ul class="nav-menu">
-        <li>
-          <a
-            href="https://linktr.ee/esperanca__crystal?fbclid=PAZXh0bgNhZW0CMTEAAaZY7X1-C2jj7k4Z-Sbo0I2s79W_mbqGy9PHtzpKabMQzyq9joQBmTw66WU_aem_UIk0IsPw5DrJJZsICTWaYg"
-            >賣貨便</a
-          >
-        </li>
         <li><a href="#album">設計款手串</a></li>
         <li>
-          <a href="https://www.instagram.com/esperanca__crystal/">客製化手串</a>
+          <a href="#" @click.prevent="goToCustom">客製化手串</a>
         </li>
         <li>
           <el-button class="searchbtn" @click="openSearch">搜尋功能</el-button>
         </li>
         <li v-if="!isLoggedIn">
           <el-button class="loginMemeber" @click="openLogin"
-            >登入您的會員帳號</el-button
+            >登入會員</el-button
           >
         </li>
         <li v-else>
@@ -60,15 +54,9 @@
 
     <!-- 手機選單 -->
     <ul class="nav-menu-mobile" id="navMenuMobile">
-      <li>
-        <a
-          href="https://linktr.ee/esperanca__crystal?fbclid=PAZXh0bgNhZW0CMTEAAaZY7X1-C2jj7k4Z-Sbo0I2s79W_mbqGy9PHtzpKabMQzyq9joQBmTw66WU_aem_UIk0IsPw5DrJJZsICTWaYg"
-          >賣貨便</a
-        >
-      </li>
       <li><a href="#album">設計款手串</a></li>
       <li>
-        <a href="https://www.instagram.com/esperanca__crystal/">客製化手串</a>
+        <a href="#" @click.prevent="goToCustom">客製化手串</a>
       </li>
       <li>
         <el-button class="searchbtn" @click="openSearch">搜尋功能</el-button>
@@ -103,7 +91,7 @@
           <el-row :gutter="30">
             <el-col :md="8" v-for="item in favoriteItems.slice(0, 6)" :key="`${item.type}_${item.title}`">
               <div class="card favorite-card" @click="openFavoriteDetail(item)">
-                <img :src="item.imgUrl" alt="" class="card-img" />
+                <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                 <div class="card-text">
                   <h3 class="card-title">{{ item.title }}</h3>
                   <p class="card-description">{{ item.note }}</p>
@@ -129,7 +117,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in production">
                   <div class="card" @click="openDetail(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" />
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -148,11 +136,34 @@
                 />
               </div>
             </el-tab-pane>
+            <el-tab-pane label="素手串" name="simple">
+              <el-row :gutter="30">
+                <el-col :md="8" v-for="item in productionSimple">
+                  <div class="card" v-on:click="openDetailSimple(item)">
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <div class="card-text">
+                      <h3 class="card-title">{{ item.title }}</h3>
+                      <p class="card-description">{{ item.note }}</p>
+                    </div>
+                  </div>
+                </el-col>
+              </el-row>
+              <div class="example-pagination-block">
+                <div class="example-demonstration">查看更多素手串</div>
+                <el-pagination
+                  layout="prev, pager, next"
+                  :total="tempOriginalSimple.length"
+                  :default-page-size="12"
+                  @change="handleSimplePage"
+                  v-model:current-page="simplePage"
+                />
+              </div>
+            </el-tab-pane>
             <el-tab-pane label="雕刻件" name="secord">
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionTurtle">
                   <div class="card" v-on:click="openDetailTurtle(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" />
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -175,7 +186,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionballs">
                   <div class="card" v-on:click="openDetailballs(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" />
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -198,7 +209,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionOre">
                   <div class="card" v-on:click="openDetailOre(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" />
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -221,7 +232,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionNecklace">
                   <div class="card" @click="openDetailNecklace(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" />
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -248,7 +259,7 @@
                   :key="item.id"
                 >
                   <div class="card" v-on:click="openDetailEarrings(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" />
+                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -300,7 +311,7 @@
         <br />
         <p>邀請價: {{ detailInfo.price }}</p>
         <br />
-        <img :src="detailInfo.imgUrl" width="300" />
+        <img :src="detailInfo.imgUrl" width="300" loading="lazy" />
         <p>注意事項：</p>
         <ul>
           <li>
@@ -571,7 +582,7 @@
   <el-dialog
     class="LoginButton"
     v-model="detailLogin"
-    title="登入您的會員帳號"
+    title="登入會員"
     width="500"
   >
     <el-form
@@ -696,18 +707,21 @@ import balls from "../model/balls";
 import ores from "../model/ores";
 import necklace from "../model/necklace";
 import earrings from "../model/earrings";
+import simpleBracelets from "../model/simpleBracelets";
 import type { FormInstance } from "element-plus";
-import HOHO from "../img/HOHO.png";
 // import axios from "axios";
 import {useRouter} from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { ShoppingCart, StarFilled, ArrowDown } from '@element-plus/icons-vue'
-
+import { setupImageLoadEffect } from '../utils/imageOptimization'
 
 
 const router = useRouter()
 
 onMounted(() => {
+  // 設置圖片載入效果
+  setupImageLoadEffect();
+  
   // axios.post('https://localhost:7270/Crystal')
   // .then(function (response) {
   //   // handle success
@@ -769,6 +783,12 @@ const detailLogin = ref(false);
 const detailInfo = reactive({} as IProduction);
 
 const openDetail = (item: IProduction) => {
+  Object.assign(detailInfo, item);
+  detailVisible.value = true;
+};
+
+//素手串
+const openDetailSimple = (item: IProduction) => {
   Object.assign(detailInfo, item);
   detailVisible.value = true;
 };
@@ -964,6 +984,10 @@ const cartItemCount = computed(() => {
 
 const openCart = () => {
   cartVisible.value = true;
+};
+
+const goToCustom = () => {
+  router.push('/custom');
 };
 
 const addToCart = (type: string, item: any) => {
@@ -1228,6 +1252,18 @@ const crystalOne = (currentPage: number, pageSize: number) => {
   });
 };
 
+//素手串的分頁事件
+const handleSimplePage = (currentPage: number, pageSize: number) => {
+  const pageData = tempOriginalSimple.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+  productionSimple.length = 0;
+  pageData.forEach((item) => {
+    productionSimple.push(item);
+  });
+};
+
 //雕刻件的分頁事件
 const handleTurtlePage = (currentPage: number, pageSize: number) => {
   const pageData = tempOriginalTurtle.slice(
@@ -1316,6 +1352,10 @@ const originalcover: Array<ICover> = [
 const original: Array<IProduction> = crystals;
 const tempOriginal: Array<IProduction> = reactive([]);
 const crystalPage = ref(1);
+//素手串資料
+const originalSimple: Array<IProduction> = simpleBracelets;
+const tempOriginalSimple: Array<IProduction> = reactive([]);
+const simplePage = ref(1);
 //雕刻件資料
 const originalTurtle: Array<IproductionTurtle> = tutles;
 const tempOriginalTurtle: Array<IproductionTurtle> = reactive([]);
@@ -1339,6 +1379,7 @@ const EarringsPage = ref(1);
 
 const cover: Array<ICover> = reactive([]);
 const production: Array<IProduction> = reactive([]);
+const productionSimple: Array<IProduction> = reactive([]);
 const productionTurtle: Array<IproductionTurtle> = reactive([]);
 const productionballs: Array<Iproductionballs> = reactive([]);
 const productionOre: Array<IproductionOre> = reactive([]);
@@ -1349,15 +1390,26 @@ onMounted(() => {
   original.forEach((item) => tempOriginal.push(item));
   original.slice(0, 12).forEach((item) => production.push(item));
 
+  originalSimple.forEach((item) => tempOriginalSimple.push(item));
+  originalSimple.slice(0, 12).forEach((item) => productionSimple.push(item));
+
+  originalTurtle.forEach((item) => tempOriginalTurtle.push(item));
   originalTurtle.slice(0, 12).forEach((item) => productionTurtle.push(item));
 
+  originalballs.forEach((item) => tempOriginalballs.push(item));
   originalballs.slice(0, 12).forEach((item) => productionballs.push(item));
 
   originalcover.slice(0, 12).forEach((item) => cover.push(item));
+  
+  originalOre.forEach((item) => tempOriginalOre.push(item));
   originalOre.slice(0, 12).forEach((item) => productionOre.push(item));
+  
+  originalNecklace.forEach((item) => tempOriginalNecklace.push(item));
   originalNecklace
     .slice(0, 12)
     .forEach((item) => productionNecklace.push(item));
+    
+  originalEarrings.forEach((item) => tempOriginalEarrings.push(item));
   originalEarrings
     .slice(0, 12)
     .forEach((item) => productionEarrings.push(item));

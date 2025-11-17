@@ -2,14 +2,24 @@
   <el-container>
   <!-- 桌面版選單 -->
    <el-main class="membermain">
-    <div class="logo">
-      <img :src="HOHO" width="160" hight="60" />
+    <div class="header-section">
+      <div class="logo">
+        <span class="logo-text">微光水晶</span>
+      </div>
+      <el-button 
+        type="primary" 
+        class="home-btn" 
+        @click="goToHome"
+        :icon="HomeFilled"
+      >
+        回到首頁
+      </el-button>
     </div>
  <div  class="memberdata">
     <div class="member-profile">
       <div class="profile-header">
         <div class="profile-avatar">
-          <img src="https://i.imgur.com/tPuVTAZ.jpeg" alt="會員頭像" />
+          <img src="https://i.imgur.com/tPuVTAZ.jpeg" alt="會員頭像" loading="lazy" />
           <div class="member-badge">
             <el-icon><StarFilled /></el-icon>
             <span>讚石級</span>
@@ -143,7 +153,7 @@
               <div class="order-content">
                 <div class="order-items">
                   <div v-for="item in (order.items || [])" :key="`${order.id}_${item.title}`" class="order-product">
-                    <img v-if="item.item?.imgUrl" :src="item.item.imgUrl" class="product-image" />
+                    <img v-if="item.item?.imgUrl" :src="item.item.imgUrl" class="product-image" loading="lazy" />
                     <div class="product-info">
                       <div class="product-name">{{ item.title }}</div>
                       <div class="product-details">{{ getTypeLabel(item.type) }} × {{ item.quantity }}</div>
@@ -185,72 +195,89 @@
         </div>
       </div>
     </div>
-    <div>
-      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-        <a class="lovebox">我的最愛專區</a>
-        <el-tag v-if="favoriteItems && favoriteItems.length > 0" type="danger">{{ favoriteItems.length }} 個收藏</el-tag>
+    
+    <!-- 我的最愛專區 -->
+    <div class="favorites-section">
+      <div class="section-header">
+        <div class="header-left">
+          <el-icon class="section-icon" :size="24"><StarFilled /></el-icon>
+          <h2 class="section-title">我的最愛專區</h2>
+          <el-tag v-if="favoriteItems && favoriteItems.length > 0" class="count-tag" type="danger" effect="dark" round>
+            {{ favoriteItems.length }} 個收藏
+          </el-tag>
+        </div>
       </div>
       
-      <div style="width: 100%; margin-bottom: 30px;">
-        <div v-if="!isLoggedIn" class="empty-favorites">
-          <el-empty description="請先登入以查看您的收藏">
-            <el-button type="primary" @click="goToHome">前往首頁登入</el-button>
+      <div class="favorites-content">
+        <!-- 未登入狀態 -->
+        <div v-if="!isLoggedIn" class="empty-state">
+          <el-empty description="">
+            <template #image>
+              <el-icon :size="80" color="#c0c4cc"><StarFilled /></el-icon>
+            </template>
+            <template #description>
+              <p class="empty-title">請先登入以查看您的收藏</p>
+              <p class="empty-subtitle">登入後即可收藏喜歡的商品</p>
+            </template>
+            <el-button type="primary" size="large" @click="goToHome" class="action-btn">
+              前往首頁登入
+            </el-button>
           </el-empty>
         </div>
         
-        <div v-else-if="!favoriteItems || favoriteItems.length === 0" class="empty-favorites">
-          <el-empty description="您還沒有收藏任何商品">
-            <el-button type="primary" @click="goToHome">前往購物</el-button>
+        <!-- 無收藏狀態 -->
+        <div v-else-if="!favoriteItems || favoriteItems.length === 0" class="empty-state">
+          <el-empty description="">
+            <template #image>
+              <el-icon :size="80" color="#c0c4cc"><Star /></el-icon>
+            </template>
+            <template #description>
+              <p class="empty-title">您還沒有收藏任何商品</p>
+              <p class="empty-subtitle">快去挑選您喜歡的水晶吧！</p>
+            </template>
+            <el-button type="primary" size="large" @click="goToHome" class="action-btn">
+              立即選購
+            </el-button>
           </el-empty>
         </div>
         
-        <el-table v-else :data="favoriteItems || []" style="width: 100%" @row-click="openFavoriteDetail">
-          <el-table-column width="80">
-            <template #default="scope">
-              <img 
-                :src="scope.row.imgUrl" 
-                style="width: 60px; height: 60px; object-fit: cover; border-radius: 8px;"
-                :alt="scope.row.title"
-              />
-            </template>
-          </el-table-column>
-          
-          <el-table-column prop="title" label="商品名稱" min-width="150">
-            <template #default="scope">
-              <div>
-                <div style="font-weight: bold; color: #267b98;">{{ scope.row.title }}</div>
-                <div style="font-size: 12px; color: #999;">{{ getTypeLabel(scope.row.type) }}</div>
+        <!-- 收藏商品卡片列表 -->
+        <div v-else class="favorites-grid">
+          <div 
+            v-for="(item, index) in favoriteItems" 
+            :key="index"
+            class="favorite-card"
+            @click="openFavoriteDetail(item)"
+          >
+            <div class="card-image">
+              <img :src="item.imgUrl" :alt="item.title" loading="lazy" />
+              <div class="card-badge">
+                <el-tag size="small" :type="getTypeBadgeType(item.type)">
+                  {{ getTypeLabel(item.type) }}
+                </el-tag>
               </div>
-            </template>
-          </el-table-column>
-          
-          <el-table-column prop="note" label="商品描述" min-width="200">
-            <template #default="scope">
-              <el-text line-clamp="2" style="font-size: 14px;">{{ scope.row.note }}</el-text>
-            </template>
-          </el-table-column>
-          
-          <el-table-column label="收藏時間" width="150">
-            <template #default="scope">
-              <div style="font-size: 12px; color: #666;">
-                {{ formatFavoriteTime(scope.row.favoriteTime) }}
-              </div>
-            </template>
-          </el-table-column>
-          
-          <el-table-column label="操作" width="100">
-            <template #default="scope">
               <el-button 
-                type="danger" 
-                size="small" 
-                @click.stop="removeFavorite(scope.$index)"
+                class="remove-btn"
+                circle
+                size="small"
+                type="danger"
                 :icon="Delete"
-              >
-                移除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+                @click.stop="removeFavorite(index)"
+              />
+            </div>
+            
+            <div class="card-content">
+              <h3 class="card-title">{{ item.title }}</h3>
+              <p class="card-description">{{ item.note }}</p>
+              <div class="card-footer">
+                <div class="favorite-time">
+                  <el-icon><Clock /></el-icon>
+                  <span>{{ formatFavoriteTime(item.favoriteTime) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
  </div>
@@ -275,11 +302,10 @@
 </el-container>
 </template>
 <script setup lang="ts">
-import HOHO from "../img/HOHO.png";
 import { ref, onMounted, computed } from "vue";
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
-import { Delete, User, Trophy, Discount, Star, ShoppingBag, StarFilled } from '@element-plus/icons-vue';
+import { Delete, User, Trophy, Discount, Star, ShoppingBag, StarFilled, Clock, HomeFilled } from '@element-plus/icons-vue';
 
 const router = useRouter();
 
@@ -430,6 +456,19 @@ const getTypeLabel = (type: string) => {
   return labels[type] || type;
 };
 
+// 獲取商品類型徽章顏色
+const getTypeBadgeType = (type: string): "" | "success" | "warning" | "info" | "danger" => {
+  const types: { [key: string]: "" | "success" | "warning" | "info" | "danger" } = {
+    crystal: 'success',
+    turtle: 'warning',
+    balls: '',
+    ore: 'info',
+    necklace: 'danger',
+    earrings: 'warning'
+  }
+  return types[type] || '';
+};
+
 // 格式化收藏時間
 const formatFavoriteTime = (timeString: string) => {
   if (!timeString) return '';
@@ -567,10 +606,38 @@ onMounted(() => {
   padding: 20px;
 }
 
-.logo {
-  text-align: center;
+.header-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 30px;
   padding: 20px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.logo {
+  text-align: left;
+}
+
+.logo-text {
+  font-size: 28px;
+  font-weight: bold;
+  color: #267b98;
+  letter-spacing: 2px;
+}
+
+.home-btn {
+  background-color: #267b98;
+  border-color: #267b98;
+  font-size: 15px;
+  padding: 10px 24px;
+}
+
+.home-btn:hover {
+  background-color: #1a5c75;
+  border-color: #1a5c75;
 }
 
 .memberdata {
@@ -586,4 +653,234 @@ onMounted(() => {
   margin-bottom: 30px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
+
+/* 我的最愛專區樣式 */
+.favorites-section {
+  background: white;
+  border-radius: 15px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.section-icon {
+  color: #267b98;
+}
+
+.section-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+.count-tag {
+  font-size: 14px;
+}
+
+.favorites-content {
+  min-height: 300px;
+}
+
+/* 空狀態樣式 */
+.empty-state {
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.empty-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin: 20px 0 10px 0;
+}
+
+.empty-subtitle {
+  font-size: 14px;
+  color: #999;
+  margin-bottom: 25px;
+}
+
+.action-btn {
+  padding: 12px 40px;
+  font-size: 16px;
+  background-color: #267b98;
+  border-color: #267b98;
+}
+
+.action-btn:hover {
+  background-color: #1a5c75;
+  border-color: #1a5c75;
+}
+
+/* 收藏商品卡片網格 */
+.favorites-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 10px 0;
+}
+
+.favorite-card {
+  background: white;
+  border: 1px solid #e8e8e8;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.favorite-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  border-color: #267b98;
+}
+
+.card-image {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  background: #f5f5f5;
+}
+
+.card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.favorite-card:hover .card-image img {
+  transform: scale(1.1);
+}
+
+.card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  z-index: 2;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 2;
+  background: rgba(255, 255, 255, 0.95);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.favorite-card:hover .remove-btn {
+  opacity: 1;
+}
+
+.card-content {
+  padding: 18px;
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: #267b98;
+  margin: 0 0 10px 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.card-description {
+  font-size: 14px;
+  color: #666;
+  line-height: 1.6;
+  margin: 0 0 15px 0;
+  height: 44px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 12px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.favorite-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #999;
+}
+
+.favorite-time .el-icon {
+  font-size: 14px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+  .favorites-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  
+  .section-title {
+    font-size: 20px;
+  }
+  
+  .favorites-section {
+    padding: 20px;
+  }
+  
+  .card-image {
+    height: 180px;
+  }
+}
+
+@media (max-width: 480px) {
+  .favorites-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-left {
+    flex-wrap: wrap;
+  }
+  
+  .header-section {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .logo {
+    text-align: center;
+  }
+  
+  .home-btn {
+    width: 100%;
+  }
+}
 </style>
+
