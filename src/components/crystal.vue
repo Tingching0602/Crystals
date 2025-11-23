@@ -31,6 +31,7 @@
               <el-dropdown-menu>
                 <el-dropdown-item command="member">會員中心</el-dropdown-item>
                 <el-dropdown-item command="orders">購買清單</el-dropdown-item>
+                <el-dropdown-item command="admin" v-if="currentUser === 'Admin'" divided>後台管理</el-dropdown-item>
                 <el-dropdown-item command="logout" divided>登出</el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -61,8 +62,16 @@
       <li>
         <el-button class="searchbtn" @click="openSearch">搜尋功能</el-button>
       </li>
-      <li>
+      <li v-if="!isLoggedIn">
         <el-button class="searchbtn" @click="openLogin">登入</el-button>
+      </li>
+      <li v-else>
+        <el-button class="searchbtn" @click="handleUserMenu('member')">會員中心</el-button>
+      </li>
+      <li>
+        <el-button class="searchbtn" @click="openCart">
+          購物車 ({{ cartItemCount }})
+        </el-button>
       </li>
     </ul>
     <!--Activity-->
@@ -81,32 +90,6 @@
         </div>
         <!-- </div> -->
       </section>
-      <!--Favorites Section (only show when logged in)-->
-      <section v-if="isLoggedIn && favoriteItems.length > 0" id="favorites" style="padding: 40px 0;">
-        <div class="container">
-          <h2 style="text-align: center; color: #267b98; margin-bottom: 30px;">
-            <el-icon style="margin-right: 10px;"><StarFilled /></el-icon>
-            我的最愛專區
-          </h2>
-          <el-row :gutter="30">
-            <el-col :md="8" v-for="item in favoriteItems.slice(0, 6)" :key="`${item.type}_${item.title}`">
-              <div class="card favorite-card" @click="openFavoriteDetail(item)">
-                <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
-                <div class="card-text">
-                  <h3 class="card-title">{{ item.title }}</h3>
-                  <p class="card-description">{{ item.note }}</p>
-                  <div class="favorite-badge">
-                    <el-icon color="#ff4757"><StarFilled /></el-icon>
-                  </div>
-                </div>
-              </div>
-            </el-col>
-          </el-row>
-          <div style="text-align: center; margin-top: 20px;" v-if="favoriteItems.length > 6">
-            <el-button @click="showAllFavorites">查看全部收藏 ({{ favoriteItems.length }})</el-button>
-          </div>
-        </div>
-      </section>
 
       <!--Album-->
 
@@ -114,10 +97,22 @@
         <div class="container">
           <el-tabs v-model="crystalOptions" type="card" class="crystals-tabs">
             <el-tab-pane label="設計款手串" name="first">
+              <!-- 除錯資訊 - 開發時使用，上線前可移除 -->
+              <!-- <div style="background: #f0f0f0; padding: 10px; margin-bottom: 20px;">
+                <button @click="debugCheckData">🔍 檢查資料</button>
+                <p>總共 {{ production.length }} 個商品</p>
+              </div> -->
+              
               <el-row :gutter="30">
-                <el-col :md="8" v-for="item in production">
+                <el-col :md="8" v-for="item in production" :key="item.title">
                   <div class="card" @click="openDetail(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img 
+                      :src="convertImageUrl(item.imgUrl) || 'https://via.placeholder.com/300x300?text=No+Image'" 
+                      :alt="item.title" 
+                      class="card-img" 
+                      loading="lazy"
+                      @error="handleImageError($event, item)"
+                    />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -140,7 +135,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionSimple">
                   <div class="card" v-on:click="openDetailSimple(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img :src="convertImageUrl(item.imgUrl)" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -163,7 +158,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionTurtle">
                   <div class="card" v-on:click="openDetailTurtle(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img :src="convertImageUrl(item.imgUrl)" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -186,7 +181,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionballs">
                   <div class="card" v-on:click="openDetailballs(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img :src="convertImageUrl(item.imgUrl)" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -209,7 +204,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionOre">
                   <div class="card" v-on:click="openDetailOre(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img :src="convertImageUrl(item.imgUrl)" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -232,7 +227,7 @@
               <el-row :gutter="30">
                 <el-col :md="8" v-for="item in productionNecklace">
                   <div class="card" @click="openDetailNecklace(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img :src="convertImageUrl(item.imgUrl)" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -259,7 +254,7 @@
                   :key="item.id"
                 >
                   <div class="card" v-on:click="openDetailEarrings(item)">
-                    <img :src="item.imgUrl" alt="" class="card-img" loading="lazy" />
+                    <img :src="convertImageUrl(item.imgUrl)" alt="" class="card-img" loading="lazy" />
                     <div class="card-text">
                       <h3 class="card-title">{{ item.title }}</h3>
                       <p class="card-description">{{ item.note }}</p>
@@ -309,9 +304,9 @@
         <br />
         <p>手圍: {{ detailInfo.head_size }}</p>
         <br />
-        <p>邀請價: {{ detailInfo.price }}</p>
+        <p>邀請價: {{ formatPrice(detailInfo) }}</p>
         <br />
-        <img :src="detailInfo.imgUrl" width="300" loading="lazy" />
+        <img :src="convertImageUrl(detailInfo.imgUrl)" width="300" loading="lazy" />
         <p>注意事項：</p>
         <ul>
           <li>
@@ -666,6 +661,11 @@
       <el-table :data="cartItems" style="width: 100%">
         <el-table-column prop="title" label="商品名稱" />
         <el-table-column prop="type" label="類型" width="80" />
+        <el-table-column label="單價" width="100">
+          <template #default="scope">
+            {{ scope.row.item.price || 'NT$ 800' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="quantity" label="數量" width="110">
           <template #default="scope">
             <el-input-number 
@@ -699,28 +699,59 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref, computed } from "vue";
-import crystals from "../model/crystals";
-import tutles from "../model/tutles";
+import { onMounted, reactive, ref, computed, watch } from "vue";
 // import "../style.css";
-import balls from "../model/balls";
-import ores from "../model/ores";
-import necklace from "../model/necklace";
-import earrings from "../model/earrings";
-import simpleBracelets from "../model/simpleBracelets";
 import type { FormInstance } from "element-plus";
 // import axios from "axios";
 import {useRouter} from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
-import { ShoppingCart, StarFilled, ArrowDown } from '@element-plus/icons-vue'
+import { ShoppingCart, ArrowDown } from '@element-plus/icons-vue'
 import { setupImageLoadEffect } from '../utils/imageOptimization'
 
 
 const router = useRouter()
 
-onMounted(() => {
+onMounted(async () => {
   // 設置圖片載入效果
   setupImageLoadEffect();
+  
+  // 載入所有產品資料
+  await loadAllProducts();
+  
+  // 從 localStorage 恢復購物車數據
+  const savedCart = localStorage.getItem('cartItems');
+  if (savedCart) {
+    try {
+      cartItems.value = JSON.parse(savedCart);
+    } catch (error) {
+      console.error('恢復購物車數據失敗:', error);
+    }
+  }
+  
+  // 檢查登入狀態
+  const savedUser = sessionStorage.getItem('currentUser');
+  const savedLoginStatus = localStorage.getItem('isLoggedIn');
+  if (savedLoginStatus === 'true' && savedUser) {
+    isLoggedIn.value = true;
+    currentUser.value = savedUser;
+    loadFavorites();
+  }
+  
+  // 檢查是否有從會員中心點擊的收藏項目
+  const favoriteDetailData = sessionStorage.getItem('openFavoriteDetail');
+  if (favoriteDetailData) {
+    try {
+      const item = JSON.parse(favoriteDetailData);
+      sessionStorage.removeItem('openFavoriteDetail'); // 清除暫存資料
+      
+      // 延遲一下再開啟對話框，確保頁面已載入完成
+      setTimeout(() => {
+        openFavoriteDetail(item);
+      }, 500);
+    } catch (error) {
+      console.error('解析收藏項目資料失敗:', error);
+    }
+  }
   
   // axios.post('https://localhost:7270/Crystal')
   // .then(function (response) {
@@ -781,6 +812,50 @@ const detailSearch = ref(false);
 const memberLogin = ref(false);
 const detailLogin = ref(false);
 const detailInfo = reactive({} as IProduction);
+
+// 圖片載入錯誤處理
+const handleImageError = (event: Event, item: any) => {
+  const target = event.target as HTMLImageElement;
+  console.error('❌ 圖片載入失敗:', item.title, item.imgUrl);
+  console.log('📋 完整項目資料:', item);
+  target.src = 'https://via.placeholder.com/300x300?text=Image+Error';
+};
+
+// 轉換 Google Drive 連結為直接圖片連結
+const convertImageUrl = (url: string): string => {
+  if (!url) return '';
+  
+  // 如果是 Google Drive 的 view 連結，轉換為直接連結
+  if (url.includes('drive.google.com/file/d/')) {
+    const match = url.match(/\/d\/([^/]+)/);
+    if (match && match[1]) {
+      const fileId = match[1];
+      const directUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+      console.log('🔄 轉換 Google Drive 連結:', url, '→', directUrl);
+      return directUrl;
+    }
+  }
+  
+  return url;
+};
+
+// 格式化價格顯示
+const formatPrice = (item: any): string => {
+  if (!item) return '';
+  
+  // 如果 price 是數字
+  if (typeof item.price === 'number') {
+    const unit = item.unit || '條';
+    return `NT$ ${item.price} / ${unit}`;
+  }
+  
+  // 如果 price 是舊格式的字串（例如 "1490元"），直接顯示
+  if (typeof item.price === 'string') {
+    return item.price;
+  }
+  
+  return '';
+};
 
 const openDetail = (item: IProduction) => {
   Object.assign(detailInfo, item);
@@ -843,9 +918,9 @@ const Login = () => {
     isLoggedIn.value = true;
     currentUser.value = loginForm.account;
     
-    // 保存登入狀態到 localStorage
-    localStorage.setItem('isLoggedIn', 'true');
-    localStorage.setItem('currentUser', loginForm.account);
+    // 保存登入狀態到 sessionStorage（僅當前會話）
+    sessionStorage.setItem('isLoggedIn', 'true');
+    sessionStorage.setItem('currentUser', loginForm.account);
     
     // 載入該用戶的最愛
     loadFavorites();
@@ -973,6 +1048,11 @@ const openLogin = () => {
 const cartVisible = ref(false);
 const cartItems = ref<Array<any>>([]);
 
+// 監聽購物車變化，自動保存到 localStorage
+watch(cartItems, (newCart) => {
+  localStorage.setItem('cartItems', JSON.stringify(newCart));
+}, { deep: true });
+
 // 我的最愛相關
 const favoriteItems = ref<Array<any>>([]);
 const isLoggedIn = ref(false);
@@ -998,11 +1078,12 @@ const addToCart = (type: string, item: any) => {
   if (existingItem) {
     existingItem.quantity += 1;
   } else {
+    // 創建商品對象的深拷貝，避免引用問題
     cartItems.value.push({
       title: item.title,
       type: type,
       quantity: 1,
-      item: item
+      item: JSON.parse(JSON.stringify(item))
     });
   }
   
@@ -1125,19 +1206,6 @@ const openFavoriteDetail = (item: any) => {
   }
 };
 
-const showAllFavorites = () => {
-  // 創建一個顯示所有收藏的對話框
-  ElMessageBox.alert(
-    `您總共收藏了 ${favoriteItems.value.length} 個商品！<br/>
-    您可以在商品詳細頁面中管理您的收藏。`,
-    '我的最愛',
-    {
-      dangerouslyUseHTMLString: true,
-      type: 'info'
-    }
-  );
-};
-
 // 處理用戶下拉選單
 const handleUserMenu = (command: string) => {
   switch (command) {
@@ -1146,6 +1214,9 @@ const handleUserMenu = (command: string) => {
       break;
     case 'orders':
       router.push('/orders');
+      break;
+    case 'admin':
+      router.push('/admin');
       break;
     case 'logout':
       logout();
@@ -1162,9 +1233,9 @@ const logout = () => {
     currentUser.value = '';
     favoriteItems.value = [];
     
-    // 清除 localStorage
-    localStorage.removeItem('isLoggedIn');
-    localStorage.removeItem('currentUser');
+    // 清除 sessionStorage
+    sessionStorage.removeItem('isLoggedIn');
+    sessionStorage.removeItem('currentUser');
     
     ElMessage.success('已成功登出');
   }).catch(() => {
@@ -1348,32 +1419,69 @@ const originalcover: Array<ICover> = [
 ];
 
 //型別要注意~
+// 從 localStorage 或 JSON 檔案載入資料的函數
+const loadProductsFromStorage = async (category: string, jsonFile: string) => {
+  const storageKey = `products_${category}`;
+  const storedData = localStorage.getItem(storageKey);
+  
+  // 優先使用 localStorage 的資料（後台新增/編輯的）
+  if (storedData) {
+    try {
+      const data = JSON.parse(storedData);
+      console.log(`✅ 從 localStorage 載入 ${category}:`, data.length, '個項目');
+      // 檢查第一個項目的圖片 URL
+      if (data.length > 0) {
+        console.log(`第一個 ${category} 的圖片 URL:`, data[0].imgUrl);
+      }
+      return data;
+    } catch (e) {
+      console.error(`❌ Error parsing ${category} from localStorage:`, e);
+    }
+  }
+  
+  // 如果沒有 localStorage 資料，從 JSON 檔案載入
+  try {
+    const response = await fetch(`/data/${jsonFile}`);
+    if (response.ok) {
+      const data = await response.json();
+      console.log(`✅ 從 JSON 檔案載入 ${category}:`, data.length, '個項目');
+      return data;
+    } else {
+      console.error(`❌ 載入 ${jsonFile} 失敗:`, response.status, response.statusText);
+    }
+  } catch (e) {
+    console.error(`❌ Error loading ${jsonFile}:`, e);
+  }
+  
+  return [];
+};
+
 //手串資料
-const original: Array<IProduction> = crystals;
+const original: Array<IProduction> = reactive([]);
 const tempOriginal: Array<IProduction> = reactive([]);
 const crystalPage = ref(1);
 //素手串資料
-const originalSimple: Array<IProduction> = simpleBracelets;
+const originalSimple: Array<IProduction> = reactive([]);
 const tempOriginalSimple: Array<IProduction> = reactive([]);
 const simplePage = ref(1);
 //雕刻件資料
-const originalTurtle: Array<IproductionTurtle> = tutles;
+const originalTurtle: Array<IproductionTurtle> = reactive([]);
 const tempOriginalTurtle: Array<IproductionTurtle> = reactive([]);
 const TurtlePage = ref(1);
 //球球系列資料
-const originalballs: Array<Iproductionballs> = balls;
+const originalballs: Array<Iproductionballs> = reactive([]);
 const tempOriginalballs: Array<Iproductionballs> = reactive([]);
 const ballsPage = ref(1);
 //原礦系列資料
-const originalOre: Array<IproductionOre> = ores;
+const originalOre: Array<IproductionOre> = reactive([]);
 const tempOriginalOre: Array<IproductionOre> = reactive([]);
 const OrePage = ref(1);
 //項鍊系列資料
-const originalNecklace: Array<IproductionNecklace> = necklace;
+const originalNecklace: Array<IproductionNecklace> = reactive([]);
 const tempOriginalNecklace: Array<IproductionNecklace> = reactive([]);
 const NecklacePage = ref(1);
 //耳環系列資料
-const originalEarrings: Array<IproductionEarrings> = earrings;
+const originalEarrings: Array<IproductionEarrings> = reactive([]);
 const tempOriginalEarrings: Array<IproductionEarrings> = reactive([]);
 const EarringsPage = ref(1);
 
@@ -1386,7 +1494,41 @@ const productionOre: Array<IproductionOre> = reactive([]);
 const productionNecklace: Array<IproductionNecklace> = reactive([]);
 const productionEarrings: Array<IproductionEarrings> = reactive([]);
 
-onMounted(() => {
+// 載入所有產品資料的函數
+const loadAllProducts = async () => {
+  console.log('🔄 開始載入所有產品資料...');
+  
+  // 載入各類產品資料 - 注意：category 名稱要與後台一致
+  const [crystalsData, simpleData, tutlesData, ballsData, oresData, necklaceData, earringsData] = await Promise.all([
+    loadProductsFromStorage('crystal', 'crystals.json'),  // 改為 'crystal' (與後台一致)
+    loadProductsFromStorage('simple', 'simpleBracelets.json'),  // 改為 'simple' (與後台一致)
+    loadProductsFromStorage('turtle', 'tutles.json'),  // 改為 'turtle' (與後台一致)
+    loadProductsFromStorage('balls', 'balls.json'),
+    loadProductsFromStorage('ore', 'ores.json'),  // 改為 'ore' (與後台一致)
+    loadProductsFromStorage('necklace', 'necklace.json'),
+    loadProductsFromStorage('earrings', 'earrings.json')
+  ]);
+  
+  console.log('📦 資料載入完成:', {
+    crystals: crystalsData.length,
+    simple: simpleData.length,
+    tutles: tutlesData.length,
+    balls: ballsData.length,
+    ores: oresData.length,
+    necklace: necklaceData.length,
+    earrings: earringsData.length
+  });
+  
+  // 填充 original 陣列
+  crystalsData.forEach((item: any) => original.push(item));
+  simpleData.forEach((item: any) => originalSimple.push(item));
+  tutlesData.forEach((item: any) => originalTurtle.push(item));
+  ballsData.forEach((item: any) => originalballs.push(item));
+  oresData.forEach((item: any) => originalOre.push(item));
+  necklaceData.forEach((item: any) => originalNecklace.push(item));
+  earringsData.forEach((item: any) => originalEarrings.push(item));
+  
+  // 填充 temp 和 production 陣列
   original.forEach((item) => tempOriginal.push(item));
   original.slice(0, 12).forEach((item) => production.push(item));
 
@@ -1413,30 +1555,5 @@ onMounted(() => {
   originalEarrings
     .slice(0, 12)
     .forEach((item) => productionEarrings.push(item));
-  
-  // 檢查是否有保存的登入狀態
-  const savedLoginStatus = localStorage.getItem('isLoggedIn');
-  const savedUser = localStorage.getItem('currentUser');
-  if (savedLoginStatus === 'true' && savedUser) {
-    isLoggedIn.value = true;
-    currentUser.value = savedUser;
-    loadFavorites();
-  }
-  
-  // 檢查是否有從會員中心點擊的收藏項目
-  const favoriteDetailData = sessionStorage.getItem('openFavoriteDetail');
-  if (favoriteDetailData) {
-    try {
-      const item = JSON.parse(favoriteDetailData);
-      sessionStorage.removeItem('openFavoriteDetail'); // 清除暫存資料
-      
-      // 延遲一下再開啟對話框，確保頁面已載入完成
-      setTimeout(() => {
-        openFavoriteDetail(item);
-      }, 500);
-    } catch (error) {
-      console.error('解析收藏項目資料失敗:', error);
-    }
-  }
-});
+};
 </script>

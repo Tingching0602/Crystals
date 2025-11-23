@@ -7,8 +7,9 @@ const balls = [
  藍磷灰石具有改善溝通、表達能力的功效，以及可以有助於人際溝通和增進團隊合作。同時，對於悲傷、冷漠及不安等情緒的緩和有極大助益。並可推進對於知識和真理的理解，促進自我成長。
 `,
     size: "43.6mm",
-    price: "790元",
-    priceType:"Pric2"
+    price: 790,
+    unit: "個",
+    priceType:"Price2"
   }, 
   {
     imgUrl: "https://i.imgur.com/YqQaQJW.jpeg",
@@ -18,8 +19,9 @@ const balls = [
  天河石具有平衡身心靈，釋放日常累積的壓力以及負面情緒，讓人更能應對生活中的困難和挑戰。可以提升溝通能力，增強說話者的說服力及自信心，能與他人建立更好的人際關係。同時，增強直覺與智慧，讓人在決策的時候可以更加明智果斷。佩戴在身上可以淨化環境中的負能量，不受不好事物干擾，保持自我。
 `,
     size: "52.4mm",
-    price: "660元",
-    priceType:"Pric2"
+    price: 660,
+    unit: "個",
+    priceType:"Price2"
   }, 
     {
         imgUrl: "https://i.imgur.com/AGuF5aM.jpeg",
@@ -34,7 +36,8 @@ const balls = [
     6.帶有紫光和藍光很美唷！
     `,
         size: "61.2mm",
-        price: "1580元",
+        price: 1580,
+        unit: "個",
         priceType:"Price4"
       },
     {
@@ -50,7 +53,8 @@ const balls = [
     6.藍光閃亮很大一片
     `,
         size: "56.6mm",
-        price: "1480元",
+        price: 1480,
+        unit: "個",
         priceType:"Price3"
       },
     {
@@ -65,7 +69,8 @@ const balls = [
     5.能緩解偏頭痛的狀況
     `,
         size: "51.1mm",
-        price: "1280元",
+        price: 1280,
+        unit: "個",
         priceType:"Price3"
       },
     {
@@ -80,7 +85,8 @@ const balls = [
     5.加強溝通能力
     `,
         size: "70.0mm",
-        price: "2880元",
+        price: 2880,
+        unit: "個",
         priceType:"Price5"
       },
     {
@@ -95,7 +101,8 @@ const balls = [
   5.改善人際關係，擴展人緣
   `,
       size: "65.6mm",
-      price: "1280元",
+      price: 1280,
+      unit: "個",
       priceType:"Price3"
     },
   ]

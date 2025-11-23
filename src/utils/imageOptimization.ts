@@ -43,8 +43,24 @@ export function setupImageLoadEffect(): void {
     });
 
     // 監聽所有 lazy loading 圖片
-    document.querySelectorAll('img[loading="lazy"]').forEach((img) => {
-      imageObserver.observe(img);
+    const observeImages = () => {
+      document.querySelectorAll('img[loading="lazy"]:not(.observed)').forEach((img) => {
+        img.classList.add('observed');
+        imageObserver.observe(img);
+      });
+    };
+
+    // 初始監聽
+    observeImages();
+
+    // 使用 MutationObserver 監聽 DOM 變化，處理動態新增的圖片
+    const mutationObserver = new MutationObserver(() => {
+      observeImages();
+    });
+
+    mutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true
     });
   }
 }

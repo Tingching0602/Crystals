@@ -215,13 +215,30 @@ const formRules = reactive<FormRules>({
 
 // 計算商品價格 (模擬價格)
 const getItemPrice = (item: any) => {
+  // 優先使用商品本身的 price 欄位
+  if (item.item && item.item.price !== undefined && item.item.price !== null) {
+    // 如果已經是數字，直接返回
+    if (typeof item.item.price === 'number') {
+      return item.item.price;
+    }
+    
+    // 如果是字串，移除 "NT$ "、"NT$"、"元"、逗號、空格等，轉換為數字
+    const priceStr = item.item.price.toString().replace(/NT\$\s?|元|,|\s/g, '').trim();
+    const price = parseInt(priceStr);
+    if (!isNaN(price) && price > 0) {
+      return price;
+    }
+  }
+  
+  // 如果沒有 price 欄位，使用預設價格（向後兼容）
   const prices: { [key: string]: number } = {
     crystal: 800,
     turtle: 1200,
     balls: 600,
     ore: 1500,
     necklace: 2000,
-    earrings: 1800
+    earrings: 1800,
+    simple: 600
   }
   return prices[item.type] || 1000
 }
